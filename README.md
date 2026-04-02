@@ -1,43 +1,35 @@
-# Secure Notes Web App (with Auth)
+# CipherStream (E2EE Chat)
 
-A modern Secure Notes web application built to provide testing scope for Threat Modeling and Incident Runbook creations. Demonstrates a complete DevOps lifecycle including containerization and automated CI/CD.
+A modern, zero-trust End-to-End Encrypted (E2EE) web chat application built to establish an advanced threat modeling security surface.
 
-## Tech Stack & Security
-- **Frontend**: React (Vite) + Tailwind CSS (Native `fetch`, no Axios). Configured with JWT LocalStorage management.
-- **Backend**: Node.js (Express) + `bcryptjs` + `jsonwebtoken`.
-- **Database**: PostgreSQL (Relational `users` and `notes` schemas).
-- **Orchestration**: Docker & Docker Compose.
-- **CI/CD**: GitHub Actions.
+## Architecture
 
-## Installation & Local Development
+*   **Frontend**: React (Vite) + Tailwind CSS + *Web Crypto API*
+*   **Backend**: Node.js + Express + *Socket.IO*
+*   **Database**: PostgreSQL
+*   **Orchestration**: Docker & Docker Compose
+
+Unlike standard chat applications, CipherStream strictly processes and routes *ciphertext*. The central server architecture is considered fully "untrusted" by design. All cryptographic operations—including RSA key pair generation, asymmetric key exchange, and AES payload encryption—are executed natively within the user's browser context. 
+
+## Motivation
+This project serves as a practical sandbox to operationally explore non-traditional security domains, including:
+- Mitigations against Client-Side XSS targeting local key extraction.
+- Defenses against Man-in-the-Middle (MitM) interceptions during Public Key transfers.
+- Analyzing the impacts of missing Perfect Forward Secrecy (PFS) and developing relevant security incident runbooks.
+
+## Getting Started
 
 ### Prerequisites
-Make sure you have [Docker Desktop](https://docs.docker.com/get-docker/) installed and **Running** on your machine.
+Make sure you have [Docker Desktop](https://docs.docker.com/get-docker/) installed and actively running.
 
-### Running with Docker Compose
-The easiest way to run the entire application stack locally is via Docker Compose.
-
+### Local Deployment
 1. Clone the repository and navigate to the project root:
    ```bash
-   cd task-manager # or the directory containing docker-compose.yml
+   git clone <your-repo-url>
+   cd CipherStream # Or your specific directory name
    ```
-
-2. Start the application stack:
+2. Start the zero-trust execution stack:
    ```bash
    docker-compose up --build
    ```
-
-3. Access the application:
-   - **Frontend UI**: http://localhost
-   - **Backend API**: http://localhost/api/notes OR http://localhost:5000/api/notes
-
-### Stopping the Application
-To stop the application and remove the containers, press `Ctrl+C` in the terminal or run:
-```bash
-docker-compose down
-```
-
-## CI/CD Pipeline
-A GitHub Actions workflow is available in `.github/workflows/main.yml`. 
-- **Trigger**: Pushes or pull requests to the `main` branch.
-- **Workflow Steps**: Code Linting -> Unit Tests (`vitest` & `jest`) -> Build Docker Images safely.
+3. Access the frontend interface natively via `http://localhost` (or `http://localhost:80`). Register an account to generate a local cryptographic profile and start communicating!
