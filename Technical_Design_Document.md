@@ -2,12 +2,12 @@
 
 **Status:** Initial Architecture / Baseline Release  
 **Version:** 0.1.0  
-**Repository:** [Insert your GitHub Repository Link Here]
+**Repository:** https://github.com/shanv09-uw/CipherStream.git
 
 ---
 
 ## 1. Overview
-**CipherStream** is a zero-trust, End-to-End Encrypted (E2EE) real-time chat application. Unlike traditional messaging platforms where the central server has access to plaintext conversations, CipherStream relies on a "zero-trust" backend broker. The backend is designed strictly to route and store ciphertext. All cryptographic operations—including key generation, asymmetric key exchange, and symmetric payload encryption—are offloaded natively to the client's browser using the Web Crypto API.
+**CipherStream** is a zero-trust, End-to-End Encrypted (E2EE) real-time chat application. Unlike traditional messaging platforms where the central server has access to plaintext conversations, CipherStream relies on a "zero-trust" backend broker. The backend is designed strictly to route and store ciphertext. All cryptographic operations including key generation, asymmetric key exchange, and symmetric payload encryption are offloaded natively to the client's browser using the Web Crypto API.
 
 The core value of this project is providing a robust, non-traditional attack surface for threat modeling, demonstrating practical implementations of secure key exchange and local persistence.
 
@@ -77,6 +77,8 @@ To maintain a tight focus on the core E2EE threat modeling scope, the following 
        +-----------> [ Node.js/Socket.IO ] <----------+
        |                 (Broker)                     |
        v                    |                         v
-[ LocalStorage ]            +---> [ PostgreSQL ] [ LocalStorage ]
-                            (Public Keys & Ciphertext)
+[ LocalStorage ]            |                   [ LocalStorage ]
+                            V
+                      [ PostgreSQL ]
+                (Public Keys & Ciphertext)
 ```
