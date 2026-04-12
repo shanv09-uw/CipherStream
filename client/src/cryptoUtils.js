@@ -163,6 +163,7 @@ export async function unwrapPrivateKey(wrappedPayloadB64, password) {
     const dec = new TextDecoder();
     return JSON.parse(dec.decode(decryptedBuffer));
   } catch (err) {
+    console.error(err);
     throw new Error("Local decryption failed: Incorrect Master Password");
   }
 }

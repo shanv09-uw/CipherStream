@@ -141,6 +141,7 @@ function App() {
     return () => {
       socket.off('receive_message');
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, activeContact, privateKey, authToken]);
 
   const fetchContacts = async () => {

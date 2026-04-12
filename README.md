@@ -25,8 +25,8 @@ Make sure you have [Docker Desktop](https://docs.docker.com/get-docker/) install
 ### Local Deployment
 1. Clone the repository and navigate to the project root:
    ```bash
-   git clone <your-repo-url>
-   cd CipherStream # Or your specific directory name
+   git clone https://github.com/shanv09-uw/CipherStream.git
+   cd CipherStream
    ```
 2. Start the zero-trust execution stack:
    ```bash
