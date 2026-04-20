@@ -1,0 +1,32 @@
+ui:
+  buttons:
+    - name: "API Logs"
+      link: "http://localhost:9999/container/038b1b344b91"
+    - name: "DB Logs"
+      link: "http://localhost:9999/container/5d2d001edc7a"
+    - name: "Frontend Logs"
+      link: "http://localhost:9999/container/2e055c160c46"
+
+metrics: true
+
+endpoints:
+  - name: CipherStream Frontend
+    group: Web
+    url: "http://cipherstream_frontend:80"
+    interval: 15s
+    conditions:
+      - "[STATUS] == 200"
+
+  - name: CipherStream Backend WebSocket/API
+    group: API
+    url: "tcp://cipherstream_backend:5000"
+    interval: 15s
+    conditions:
+      - "[CONNECTED] == true"
+
+  - name: CipherStream Database
+    group: Core Services
+    url: "tcp://cipherstream_db:5432"
+    interval: 15s
+    conditions:
+      - "[CONNECTED] == true"
