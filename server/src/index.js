@@ -48,8 +48,6 @@ const initDb = async () => {
   }
 };
 
-initDb();
-
 // --- Auth Middleware ---
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
@@ -189,6 +187,7 @@ io.on('connection', (socket) => {
 });
 
 if (require.main === module) {
+  initDb();
   server.listen(port, () => {
     console.log(`Auth-Secured Broker running on ${port}`);
   });
