@@ -188,6 +188,10 @@ io.on('connection', (socket) => {
   });
 });
 
-server.listen(port, () => {
-  console.log(`Auth-Secured Broker running on ${port}`);
-});
+if (require.main === module) {
+  server.listen(port, () => {
+    console.log(`Auth-Secured Broker running on ${port}`);
+  });
+}
+
+module.exports = { app, server };
