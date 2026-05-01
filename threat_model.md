@@ -50,3 +50,19 @@
 1. **Immediate Need:** Implement Ed25519 or RSA-PSS digital signatures on all outgoing ciphertexts so the recipient can verify the sender's identity, preventing server-forged messages.
 2. **Short-Term:** Restrict UI payload rendering to strict text (no innerHTML) to mitigate XSS targeting `localStorage`.
 3. **Long-Term:** Migrate from static RSA to the Double Ratchet algorithm for PFS, and move key material to `IndexedDB` using non-extractable `CryptoKey` objects.
+
+## 4. Updates from HW4 (Automated Tests & Systemic Risks)
+
+As part of HW4, I have translated this threat model into automated security testing and updated with systemic "unknown unknown" risks.
+
+### 4.1 Automated Security Testing Mappings
+Abstract risks identified above are now explicitly mitigated and tracked via automated Jest scripts (`api.test.js`):
+*   **Authentication Boundary Validation:** I have now implemented automated tests that verify that unauthenticated requests (missing JWTs) to the `/api/messages` endpoint are forcefully rejected (HTTP 401). This directly mitigates basic Server Forgery/Data Leakage attempts at the API logic layer.
+*Reference:* Detailed in `hw4_security_tests.md` and `hw4_operational_runbook.md`.
+
+### 4.2 Systemic "Unknown Unknowns" Identified
+Beyond the STRIDE application model, I have identified new systemic risks that could cause a complete architecture collapse:
+1.  **Upstream Supply Chain:** The risk of NPM dependencies (`socket.io`, `bcryptjs`) being poisoned.
+2.  **Cryptographic Obsolescence:** The risk of mathematical breakthroughs cracking AES-GCM or zero-days in the Web Crypto API.
+3.  **Infrastructure Blast-Radius:** The risk of the entire Docker-Compose stack failing due to unpredictable datacenter catastrophes.
+*Reference:* Detailed in `hw4_unknown_unknowns.md`.
