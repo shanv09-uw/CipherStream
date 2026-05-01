@@ -1,12 +1,13 @@
 const request = require('supertest');
-const { app, server } = require('./index');
+
+// Mock the database before requiring index.js to prevent connection errors in CI pipelines
+jest.mock('./db', () => ({
+  query: jest.fn().mockResolvedValue({ rows: [] })
+}));
+
+const { app } = require('./index');
 
 describe('CipherStream Backend API Tests', () => {
-
-  afterAll((done) => {
-    // Close the server instance so Jest can exit cleanly
-    server.close(done);
-  });
 
   describe('Functional Test: User Login Validation', () => {
     it('should return 400 Bad Request if missing credentials', async () => {
