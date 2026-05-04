@@ -33,4 +33,31 @@ describe('CipherStream Backend API Tests', () => {
     });
   });
 
+  describe('Security Test: Express Fingerprinting', () => {
+    it('should not leak the X-Powered-By header on responses', async () => {
+      const response = await request(app).get('/api/users');
+      expect(response.headers['x-powered-by']).toBeUndefined();
+    });
+  });
+
+});
+
+describe('CipherStream Backend Pure Unit Tests', () => {
+  const { authenticateToken } = require('./index');
+
+  describe('authenticateToken Middleware', () => {
+    it('should return 401 if no authorization header is provided', () => {
+      // Create mock Request, Response, and Next objects
+      const req = { headers: {} };
+      const res = { sendStatus: jest.fn() };
+      const next = jest.fn();
+
+      // Call the middleware directly in isolation (Pure Unit Test)
+      authenticateToken(req, res, next);
+
+      // Verify the correct status code was sent without calling next()
+      expect(res.sendStatus).toHaveBeenCalledWith(401);
+      expect(next).not.toHaveBeenCalled();
+    });
+  });
 });

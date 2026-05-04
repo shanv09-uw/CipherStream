@@ -15,6 +15,7 @@ const io = new Server(server, {
 const port = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_e2ee_key';
 
+app.disable('x-powered-by'); // HW5 Security: Disable Express fingerprinting header
 app.use(cors());
 app.use(express.json());
 
@@ -194,4 +195,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { app, server };
+module.exports = { app, server, authenticateToken };
