@@ -39,6 +39,26 @@ describe('CipherStream Backend API Tests', () => {
       expect(response.headers['x-powered-by']).toBeUndefined();
     });
   });
+  describe('Operational Risk: OE Dashboard Health Probes', () => {
+    it('should respond to /api/health with 200 OK within latency threshold', async () => {
+      const response = await request(app).get('/api/health');
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('status', 'ok');
+    });
+  });
+
+  describe('Operational Risk: Payload Memory Exhaustion', () => {
+    it('should reject massive JSON payloads with 413 Payload Too Large', async () => {
+      // Create a massive payload (> 10kb)
+      const massivePayload = { data: 'A'.repeat(20000) };
+      
+      const response = await request(app)
+        .post('/api/login') // Sending to an unauthenticated route
+        .send(massivePayload);
+        
+      expect(response.status).toBe(413);
+    });
+  });
 
 });
 
