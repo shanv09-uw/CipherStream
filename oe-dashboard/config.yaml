@@ -24,6 +24,14 @@ endpoints:
     conditions:
       - "[CONNECTED] == true"
 
+  - name: Backend API Health & Latency
+    group: API
+    url: "http://cipherstream_backend:5000/api/health"
+    interval: 10s
+    conditions:
+      - "[STATUS] == 200"
+      - "[RESPONSE_TIME] < 500"
+
   - name: CipherStream Database
     group: Core Services
     url: "tcp://cipherstream_db:5432"
