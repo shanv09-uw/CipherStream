@@ -5,6 +5,38 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('./db');
+const promClient = require('prom-client');
+
+promClient.collectDefaultMetrics();
+
+const activeUsersGauge = new promClient.Gauge({
+  name: 'cipherstream_active_users',
+  help: 'Number of active WebSocket connections'
+});
+const messagesSentCounter = new promClient.Counter({
+  name: 'cipherstream_messages_sent_total',
+  help: 'Total number of encrypted messages successfully routed'
+});
+const authErrorsCounter = new promClient.Counter({
+  name: 'cipherstream_auth_errors_total',
+  help: 'Total number of authentication errors'
+});
+const apiRequestsCounter = new promClient.Counter({
+  name: 'cipherstream_api_requests_total',
+  help: 'Total volume of HTTP API requests (Business Engagement)'
+});
+const registrationsCounter = new promClient.Counter({
+  name: 'cipherstream_registrations_total',
+  help: 'Total number of successful new user registrations (Business Growth)'
+});
+const messagesFailedCounter = new promClient.Counter({
+  name: 'cipherstream_messages_failed_total',
+  help: 'Total number of failed message deliveries (Customer Trust)'
+});
+const bytesTransferredCounter = new promClient.Counter({
+  name: 'cipherstream_bytes_transferred_total',
+  help: 'Total size in bytes of payloads routed (Infrastructure Cost)'
+});
 
 const app = express();
 const server = http.createServer(app);
@@ -18,6 +50,12 @@ const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_e2ee_key';
 app.disable('x-powered-by'); // HW5 Security: Disable Express fingerprinting header
 app.use(cors());
 app.use(express.json({ limit: '10kb' })); // HW6: Guardrail against memory exhaustion
+
+// Track all API requests
+app.use((req, res, next) => {
+  apiRequestsCounter.inc();
+  next();
+});
 
 // Initialize tables
 const initDb = async () => {
@@ -66,6 +104,15 @@ const authenticateToken = (req, res, next) => {
 
 // --- API Endpoints ---
 
+app.get('/api/metrics', async (req, res) => {
+  try {
+    res.set('Content-Type', promClient.register.contentType);
+    res.end(await promClient.register.metrics());
+  } catch (ex) {
+    res.status(500).end(ex);
+  }
+});
+
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
@@ -89,6 +136,8 @@ app.post('/api/register', async (req, res) => {
     const user = rows[0];
     const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '24h' });
 
+    registrationsCounter.inc(); // Business Metric: Growth
+    
     res.status(201).json({ user, token });
   } catch (err) {
     if (err.code === '23505') { // Unique violation
@@ -102,14 +151,23 @@ app.post('/api/register', async (req, res) => {
 app.post('/api/login', async (req, res) => {
   try {
     const { username, password } = req.body;
-    if (!username || !password) return res.status(400).json({ error: 'Username and password required' });
+    if (!username || !password) {
+      authErrorsCounter.inc();
+      return res.status(400).json({ error: 'Username and password required' });
+    }
 
     const { rows } = await db.query('SELECT * FROM users WHERE username = $1', [username]);
-    if (rows.length === 0) return res.status(400).json({ error: 'Invalid credentials' });
+    if (rows.length === 0) {
+      authErrorsCounter.inc();
+      return res.status(400).json({ error: 'Invalid credentials' });
+    }
 
     const user = rows[0];
     const isMatch = await bcrypt.compare(password, user.password_hash);
-    if (!isMatch) return res.status(400).json({ error: 'Invalid credentials' });
+    if (!isMatch) {
+      authErrorsCounter.inc();
+      return res.status(400).json({ error: 'Invalid credentials' });
+    }
 
     const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '24h' });
     
@@ -165,6 +223,7 @@ io.use((socket, next) => {
 io.on('connection', (socket) => {
   console.log(`Socket Connected: User ${socket.userId}`);
   activeUsers.set(String(socket.userId), socket.id);
+  activeUsersGauge.set(activeUsers.size);
 
   socket.on('private_message', async (data, callback) => {
     try {
@@ -174,6 +233,10 @@ io.on('connection', (socket) => {
         [socket.userId, data.receiver_id, data.encrypted_aes_key, data.sender_encrypted_aes_key, data.encrypted_payload]
       );
       const savedMessage = rows[0];
+      messagesSentCounter.inc();
+      if (data.encrypted_payload) {
+        bytesTransferredCounter.inc(Buffer.byteLength(data.encrypted_payload, 'utf8'));
+      }
 
       const receiverSocketId = activeUsers.get(String(data.receiver_id));
       if (receiverSocketId) {
@@ -183,12 +246,14 @@ io.on('connection', (socket) => {
       if (callback) callback({ success: true, message: savedMessage });
     } catch (err) {
       console.error('Socket message error:', err);
+      messagesFailedCounter.inc(); // Business Metric: Trust/Failure
       if (callback) callback({ success: false, error: err.message });
     }
   });
 
   socket.on('disconnect', () => {
     activeUsers.delete(String(socket.userId));
+    activeUsersGauge.set(activeUsers.size);
   });
 });
 
