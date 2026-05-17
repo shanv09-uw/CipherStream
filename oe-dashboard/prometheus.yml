@@ -1,0 +1,8 @@
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: 'cipherstream_backend'
+    static_configs:
+      - targets: ['cipherstream_backend:5000']
+    metrics_path: '/api/metrics'
