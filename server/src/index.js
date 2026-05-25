@@ -117,6 +117,36 @@ app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// DELETE /api/users/me (GDPR Right to Erasure)
+app.delete('/api/users/me', async (req, res) => {
+  const token = req.headers['authorization'];
+  if (!token) return res.status(401).json({ error: 'Unauthorized' });
+
+  try {
+    const decoded = jwt.verify(token.split(' ')[1], JWT_SECRET);
+    
+    // Begin transaction for complete erasure
+    await db.query('BEGIN');
+    
+    // Delete all messages where user is sender or receiver
+    await db.query('DELETE FROM messages WHERE sender_id = $1 OR receiver_id = $1', [decoded.id]);
+    
+    // Delete the user record completely
+    const result = await db.query('DELETE FROM users WHERE id = $1 RETURNING id', [decoded.id]);
+    
+    await db.query('COMMIT');
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.status(200).json({ success: true, message: 'Account completely erased' });
+  } catch (err) {
+    await db.query('ROLLBACK');
+    res.status(401).json({ error: 'Invalid token or deletion failed' });
+  }
+});
+
 app.post('/api/register', async (req, res) => {
   try {
     const { username, password, public_key, encrypted_private_key } = req.body;
