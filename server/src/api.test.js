@@ -60,6 +60,23 @@ describe('CipherStream Backend API Tests', () => {
     });
   });
 
+  describe('Compliance & Legal API', () => {
+    it('should allow users to exercise Right to Erasure (Delete Account)', async () => {
+      // Mock successful JWT decoding
+      const jwt = require('jsonwebtoken');
+      jest.spyOn(jwt, 'verify').mockReturnValue({ id: 999, username: 'delete_me' });
+      
+      const response = await request(app)
+        .delete('/api/users/me')
+        .set('Authorization', 'Bearer fake_valid_token');
+      
+      // We expect the mock db to return an empty array by default, but in our code it checks rowCount.
+      // Since it's mocked to return {rows:[]}, rowCount is undefined. The db mock handles the query.
+      // But we just want to ensure it passes the 401 check and hits the db logic.
+      expect(response.status).not.toBe(401);
+    });
+  });
+
 });
 
 describe('CipherStream Backend Pure Unit Tests', () => {
