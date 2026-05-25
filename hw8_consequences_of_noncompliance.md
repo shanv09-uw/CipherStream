@@ -10,7 +10,7 @@ If CipherStream fails to implement features like the **Right to Erasure (Account
 
 **Sources:**
 *   GDPR Fines Documentation: https://gdpr.eu/fines/
-*   WhatsApp GDPR Fine: https://www.edpb.europa.eu/news/news/2021/whatsapp-ireland-fined-225-million-euros-following-edpb-binding-decision_en
+*   WhatsApp GDPR Fine: https://www.activemind.legal/guides/fine-whatsapp/
 
 ## 2. Criminal and Civil Penalties (CALEA / Lawful Intercept)
 While E2EE provides a technical shield against wiretapping, attempting to actively circumvent or ignore lawful court orders for available metadata brings legal trouble.
