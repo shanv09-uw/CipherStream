@@ -30,9 +30,9 @@ def background_http_traffic():
                     "password": "WRONG_PASSWORD"
                 }, timeout=2)
                 
-            time.sleep(3) # Wait 3 seconds before next cycle
+            time.sleep(15) # Wait 15 seconds before next cycle to keep baseline low
         except Exception as e:
-            time.sleep(3)
+            time.sleep(15)
 
 def generate_websocket_traffic():
     """Connect a WebSocket and spam encrypted payloads."""

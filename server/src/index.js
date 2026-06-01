@@ -45,7 +45,12 @@ const io = new Server(server, {
 });
 
 const port = process.env.PORT || 5000;
-const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_e2ee_key';
+require('dotenv').config();
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  console.error("FATAL ERROR: JWT_SECRET is not defined in .env");
+  process.exit(1);
+}
 
 app.disable('x-powered-by'); // HW5 Security: Disable Express fingerprinting header
 app.use(cors());
