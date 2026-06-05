@@ -11,7 +11,10 @@ Supply chain attackers often deploy data-stealing payloads that consume massive 
 
 **Actionable Steps:**
 - [ ] **Monitor OE Metrics:** Access the Grafana Operational Excellence (OE) Dashboard (`http://localhost:3000`).
-- [ ] **Identify Anomalies:** Look for sustained, severe spikes in **Event Loop Lag** (> 1000ms) and **Process Memory Usage** that deviate significantly from the baseline.
+- [ ] **Identify Anomalies:** Compare current metrics against the following critical incident thresholds to determine if a spike is uncommon:
+    *   **Event Loop Lag:** `> 20ms` (Normal local baseline is `< 2ms`. Anything `> 500ms` indicates a severe synchronous blocking attack).
+    *   **Process Memory Usage:** Sudden jump of `> 30 MB` above the standard 40MB baseline.
+    *   **Process CPU:** `> 70%` utilization sustained for more than 1 minute without a corresponding spike in `API Requests Total`.
 - [ ] **Audit Dependencies:** If metrics indicate an anomaly, immediately audit the `package.json` file and recent Git commits for typosquatted packages (e.g., `bcrytp` instead of `bcrypt`).
 
 ## 2. Containment Phase (Mitigation)
